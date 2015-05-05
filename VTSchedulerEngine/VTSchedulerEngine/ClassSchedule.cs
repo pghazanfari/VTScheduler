@@ -53,8 +53,11 @@ namespace VTSchedulerEngine
                 req.Subject = info[0];
                 req.CourseNumber = Convert.ToInt32(info[1]);
                 List<Class> results = req.Post();
-                list.Add(results);
-                //list.Add(req.Post());
+                for (int j = 0; j < results.Count; j++)
+                    if (results[j].Schedule.Count == 0)
+                        results.RemoveAt(j--);
+
+                    list.Add(results);
             }
             int[] indices = new int[list.Count];
             int mindex = list.Count - 1;
