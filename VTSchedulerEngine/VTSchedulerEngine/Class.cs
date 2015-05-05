@@ -10,6 +10,7 @@ namespace VTSchedulerEngine
     public class Class
     {
         public int CRN { get; private set; }
+        public int CourseNumber {get; private set;}
         public string Course { get; private set; }
         public string Title { get; private set; }
         public string Type { get; private set; }
@@ -30,6 +31,18 @@ namespace VTSchedulerEngine
             Capacity = capacity;
             Instructor = instructor;
             Location = location;
+
+            int i1 = course.IndexOf('-');
+
+            string sub = course.Substring(i1 + 1);
+            char[] array = sub.ToCharArray();
+            int i2 = array.Length - 1;
+            for (; i2 > i1; i2--)
+            {
+                if (Char.IsDigit(array[i2]))
+                    break;
+            }
+            CourseNumber = int.Parse(sub.Substring(0, i2 + 1));
         }
         
         public bool Intersects(Class c)

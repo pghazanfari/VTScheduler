@@ -22,6 +22,43 @@ namespace VTSchedulerEngine
             return Weekday.MONDAY;
         }
 
+        public static string Abbreviate(Weekday weekday)
+        {
+            switch (weekday)
+            {
+                case Weekday.MONDAY:
+                {
+                    return "M";
+                }
+
+                case Weekday.TUESDAY:
+                {
+                    return "T";
+                }
+                case Weekday.WEDNESDAY:
+                {
+                    return "R";
+                }
+                case Weekday.THURSDAY:
+                {
+                    return "M";
+                }
+                case Weekday.FRIDAY:
+                {
+                    return "F";
+                }
+                case Weekday.SATURDAY:
+                {
+                    return "Sat";
+                }
+                case Weekday.SUNDAY:
+                {
+                    return "Sun";
+                }
+            }
+            return "";
+        }
+
         public int WeekdayIndex { get; private set; }
         public Weekday Day
         {
@@ -50,6 +87,15 @@ namespace VTSchedulerEngine
             if (wdt.WeekdayIndex != WeekdayIndex) return WeekdayIndex.CompareTo(wdt.WeekdayIndex);
             if (wdt.Hour != Hour) return Hour.CompareTo(wdt.Hour);
             return Minute.CompareTo(wdt.Minute);
+        }
+
+        public string toTimeString()
+        {
+            string suffix = Hour >= 12 ? "PM" : "AM";
+            int h = Hour > 12 ? Hour - 12 : Hour;
+            string hour = h < 10 ? "0" + h : "" + h;
+            string min = Minute < 10 ? "0" + Minute : "" + Minute;
+            return hour + ":" + min + " " + suffix;
         }
 
         public override string ToString()
@@ -95,6 +141,11 @@ namespace VTSchedulerEngine
         public int CompareTo(DatetimeEvent wdt)
         {
             return Start.CompareTo(wdt.Start);
+        }
+
+        public string toTimeString() 
+        {
+            return Start.toTimeString() + "-" + End.toTimeString();
         }
 
         public override string ToString()

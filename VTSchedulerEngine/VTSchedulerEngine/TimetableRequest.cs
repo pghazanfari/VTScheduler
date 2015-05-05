@@ -69,7 +69,7 @@ namespace VTSchedulerEngine
                 "&CORE_CODE=" + CoreCode +
                 "&subj_code=" + Subject + 
                 "&SCHDTYPE=" + getSectionString(SectionType) + 
-                "&CRSE_NUMBER=" + CourseNumber + 
+                "&CRSE_NUMBER=" + (CourseNumber < 1000 ? "" : "" + CourseNumber) + 
                 "&crn=" + (CRN == 0 ? "" : "" + CRN) + 
                 "&open_only=" + (OpenOnly ? "on" : "") + 
                 "&BTN_PRESSED=FIND+class+section&inst_name=";
@@ -129,8 +129,15 @@ namespace VTSchedulerEngine
                 string[] end;
 
 
-                //Add CRN
-                crn = Convert.ToInt32(cols[0].Element("a").Element("b").InnerText.Trim());
+                try
+                {
+                    //Add CRN
+                    crn = Convert.ToInt32(cols[0].Element("a").Element("b").InnerText.Trim());
+                }
+                catch (Exception e)
+                {
+                    crn = 0;
+                }
                 //Add Course
                 course = cols[1].InnerText.Trim();
                 //Add Title
@@ -138,39 +145,60 @@ namespace VTSchedulerEngine
                 //Add Type
                 type = cols[3].InnerText.Trim();
                 //Add Credit Hours
-                creditHours = Convert.ToInt32(cols[4].InnerText.Trim());
-                //Add Capacity
-                capacity = Convert.ToInt32(cols[5].InnerText.Trim());
+                try
+                {
+                    creditHours = Convert.ToInt32(cols[4].InnerText.Trim());
+                }
+                catch (Exception e)
+                {
+                    creditHours = 0;
+                }
+
+                try
+                {
+                    //Add Capacity
+                    capacity = Convert.ToInt32(cols[5].InnerText.Trim());
+                }
+                catch (Exception e)
+                {
+                    capacity = 0;
+                }
+
                 //Add Instructor
                 instructor = cols[6].InnerText.Trim();
 
-                //Add Days
-                days = cols[7].InnerText.Trim().Split(' ');
-
-                //Add Begin
-                string _begin = cols[8].InnerText.Trim();
-                string beginAmPm = _begin.Substring(_begin.Length - 2);
-                begin = _begin.Substring(0, _begin.Length - 2).Split(':');
-
-                //Add End
-                string _end = cols[9].InnerText.Trim();
-                string endAmPm = _end.Substring(_end.Length - 2);
-                end = _end.Substring(0, _end.Length - 2).Split(':');
-
                 List<DatetimeEvent> dt = new List<DatetimeEvent>();
-                for (int i = 0; i < days.Length; i++)
+                try
                 {
-                    int sHour = Convert.ToInt32(begin[0]) + (beginAmPm.ToLower().Equals("am") ? 0 : 12);
-                    int sMinute = Convert.ToInt32(begin[1]);
+                    //Add Days
+                    days = cols[7].InnerText.Trim().Split(' ');
 
-                    int eHour = Convert.ToInt32(end[0]) + (endAmPm.ToLower().Equals("am") ? 0 : 12);
-                    int eMinute = Convert.ToInt32(end[1]);
+                    //Add Begin
+                    string _begin = cols[8].InnerText.Trim();
+                    string beginAmPm = _begin.Substring(_begin.Length - 2);
+                    begin = _begin.Substring(0, _begin.Length - 2).Split(':');
 
-                    Datetime start = new Datetime(days[i], sHour, sMinute);
-                    int duration = (eHour - sHour) * 60 + eMinute - sMinute;
-                    DatetimeEvent ev = new DatetimeEvent(start, duration);
-                    dt.Add(ev);
+                    //Add End
+                    string _end = cols[9].InnerText.Trim();
+                    string endAmPm = _end.Substring(_end.Length - 2);
+                    end = _end.Substring(0, _end.Length - 2).Split(':');
+
+                    
+                    for (int i = 0; i < days.Length; i++)
+                    {
+                        int sHour = Convert.ToInt32(begin[0]) + (beginAmPm.ToLower().Equals("am") ? 0 : 12);
+                        int sMinute = Convert.ToInt32(begin[1]);
+
+                        int eHour = Convert.ToInt32(end[0]) + (endAmPm.ToLower().Equals("am") ? 0 : 12);
+                        int eMinute = Convert.ToInt32(end[1]);
+
+                        Datetime start = new Datetime(days[i], sHour, sMinute);
+                        int duration = (eHour - sHour) * 60 + eMinute - sMinute;
+                        DatetimeEvent ev = new DatetimeEvent(start, duration);
+                        dt.Add(ev);
+                    }
                 }
+                catch (Exception e) { }
 
                 //Add Location
                 location = cols[10].InnerText.Trim();
