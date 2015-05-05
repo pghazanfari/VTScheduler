@@ -70,29 +70,36 @@ namespace VTScheduler
 
         private void loadClassesButton_Click(object sender, EventArgs e)
         {
-            TimetableRequest request = new TimetableRequest();
-            request.Campus = TimetableRequest.CampusType.Blacksburg;
-            request.Semester = Semester;
-            request.Year = Year;
-            request.Subject = subjects[subjectSelector.SelectedIndex];
-
-            List<Class> classes = request.Post();
-            HashSet<String> uniqueClasses = new HashSet<string>();
-            List<String> classDescriptions = new List<string>();
-            List<String> classInformation = new List<string>();
-            foreach (Class c in classes)
+            try
             {
-                if (!uniqueClasses.Contains(c.Title))
+                TimetableRequest request = new TimetableRequest();
+                request.Campus = TimetableRequest.CampusType.Blacksburg;
+                request.Semester = Semester;
+                request.Year = Year;
+                request.Subject = subjects[subjectSelector.SelectedIndex];
+
+                List<Class> classes = request.Post();
+                HashSet<String> uniqueClasses = new HashSet<string>();
+                List<String> classDescriptions = new List<string>();
+                List<String> classInformation = new List<string>();
+                foreach (Class c in classes)
                 {
-                    uniqueClasses.Add(c.Title);
-                    classDescriptions.Add(c.Course + " - " + c.Title);
-                    classInformation.Add(subjects[subjectSelector.SelectedIndex] + " " + c.CourseNumber);
+                    if (c.Schedule.Count > 0 && !uniqueClasses.Contains(c.Title))
+                    {
+                        uniqueClasses.Add(c.Title);
+                        classDescriptions.Add(c.Course + " - " + c.Title);
+                        classInformation.Add(subjects[subjectSelector.SelectedIndex] + " " + c.CourseNumber);
+                    }
                 }
+                currentClasses = classDescriptions.ToArray();
+                currentClassesInformation = classInformation.ToArray();
+                classesList.Items.Clear();
+                classesList.Items.AddRange(currentClasses);
             }
-            currentClasses = classDescriptions.ToArray();
-            currentClassesInformation = classInformation.ToArray();
-            classesList.Items.Clear();
-            classesList.Items.AddRange(currentClasses);
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not load classes.");
+            }
             
         }
 
@@ -113,22 +120,28 @@ namespace VTScheduler
 
         private void addClassButton_Click(object sender, EventArgs e)
         {
-            string selectedClass = currentClasses[classesList.SelectedIndex];
-            string selectedClassInformation = currentClassesInformation[classesList.SelectedIndex];
-
-            if (!addedClassesInformation.Contains(selectedClassInformation))
+            if (classesList.SelectedIndex >= 0)
             {
-                addedClasses.Add(selectedClass);
-                addedClassesInformation.Add(selectedClassInformation);
-                addedClassesList.Items.Add(selectedClass);
+                string selectedClass = currentClasses[classesList.SelectedIndex];
+                string selectedClassInformation = currentClassesInformation[classesList.SelectedIndex];
+
+                if (!addedClassesInformation.Contains(selectedClassInformation))
+                {
+                    addedClasses.Add(selectedClass);
+                    addedClassesInformation.Add(selectedClassInformation);
+                    addedClassesList.Items.Add(selectedClass);
+                }
             }
         }
 
         private void removeClassButton_Click(object sender, EventArgs e)
         {
-            addedClasses.RemoveAt(addedClassesList.SelectedIndex);
-            addedClassesInformation.RemoveAt(addedClassesList.SelectedIndex);
-            addedClassesList.Items.RemoveAt(addedClassesList.SelectedIndex);
+            if (addedClassesList.SelectedIndex >= 0)
+            {
+                addedClasses.RemoveAt(addedClassesList.SelectedIndex);
+                addedClassesInformation.RemoveAt(addedClassesList.SelectedIndex);
+                addedClassesList.Items.RemoveAt(addedClassesList.SelectedIndex);
+            }
         }
 
         private void findScheduleButton_Click(object sender, EventArgs e)
@@ -138,20 +151,33 @@ namespace VTScheduler
             preferences.DislikeFriday = preferencesList.CheckedIndices.Contains(2);
             preferences.AvoidGaps = preferencesList.CheckedIndices.Contains(3);
 
-            List<ClassSchedule> list = ClassSchedule.GetPossibleSchedules(
-                TimetableRequest.CampusType.Blacksburg, Year, Semester, 
-                TimetableRequest.Section.All, addedClassesInformation.ToArray());
-
-            List<KeyValuePair<int, ClassSchedule>> scores = new List<KeyValuePair<int, ClassSchedule>>();
-            foreach (ClassSchedule sched in list)
-                scores.Add(new KeyValuePair<int, ClassSchedule>(preferences.Score(sched), sched));
-            scores.Sort(delegate(KeyValuePair<int, ClassSchedule> a, KeyValuePair<int, ClassSchedule> b)
+            try
             {
-                return b.Key.CompareTo(a.Key); //Sort in descending order
-            });
+                List<ClassSchedule> list = ClassSchedule.GetPossibleSchedules(
+                    TimetableRequest.CampusType.Blacksburg, Year, Semester,
+                    TimetableRequest.Section.All, addedClassesInformation.ToArray());
 
-            ResultsForm form = new ResultsForm(scores);
-            form.Show();
+                List<KeyValuePair<int, ClassSchedule>> scores = new List<KeyValuePair<int, ClassSchedule>>();
+                foreach (ClassSchedule sched in list)
+                    scores.Add(new KeyValuePair<int, ClassSchedule>(preferences.Score(sched), sched));
+                scores.Sort(delegate(KeyValuePair<int, ClassSchedule> a, KeyValuePair<int, ClassSchedule> b)
+                {
+                    return b.Key.CompareTo(a.Key); //Sort in descending order
+                });
+
+                if (scores.Count == 0)
+                {
+                    MessageBox.Show("No possible schedules found.");
+                    return;
+                }
+
+                ResultsForm form = new ResultsForm(scores);
+                form.Show();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Could not generate schedules.");
+            }
         }
     }
 }

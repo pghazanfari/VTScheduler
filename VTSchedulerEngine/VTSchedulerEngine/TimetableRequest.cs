@@ -138,12 +138,33 @@ namespace VTSchedulerEngine
                 {
                     crn = 0;
                 }
-                //Add Course
-                course = cols[1].InnerText.Trim();
-                //Add Title
-                title = cols[2].InnerText.Trim();
-                //Add Type
-                type = cols[3].InnerText.Trim();
+                try
+                {
+                    //Add Course
+                    course = cols[1].InnerText.Trim();
+                }
+                catch (Exception e)
+                {
+                    course = "";
+                }
+                try
+                {
+                    //Add Title
+                    title = cols[2].InnerText.Trim();
+                }
+                catch (Exception e)
+                {
+                    title = "";
+                }
+                try
+                {
+                    //Add Type
+                    type = cols[3].InnerText.Trim();
+                }
+                catch (Exception e)
+                {
+                    type = "";
+                }
                 //Add Credit Hours
                 try
                 {
@@ -164,8 +185,15 @@ namespace VTSchedulerEngine
                     capacity = 0;
                 }
 
-                //Add Instructor
-                instructor = cols[6].InnerText.Trim();
+                try
+                {
+                    //Add Instructor
+                    instructor = cols[6].InnerText.Trim();
+                }
+                catch (Exception e)
+                {
+                    instructor = "";
+                }
 
                 List<DatetimeEvent> dt = new List<DatetimeEvent>();
                 try
@@ -200,8 +228,15 @@ namespace VTSchedulerEngine
                 }
                 catch (Exception e) { }
 
-                //Add Location
-                location = cols[10].InnerText.Trim();
+                try
+                {
+                    //Add Location
+                    location = cols[10].InnerText.Trim();
+                }
+                catch (Exception e)
+                {
+                    location = "";
+                }
 
                 Class cl = new Class(crn, course, title, type, creditHours, capacity, instructor, location, dt.ToArray());
                 classes.Add(cl);

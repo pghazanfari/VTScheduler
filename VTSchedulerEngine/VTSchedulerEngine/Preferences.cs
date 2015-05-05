@@ -32,7 +32,17 @@ namespace VTSchedulerEngine
             foreach (KeyValuePair<Datetime.Weekday, List<DatetimeEvent>> pair in dictionary)
                 pair.Value.Sort();
 
-            return scoreAvoidGaps(dictionary) + scoreDislikeMorning(dictionary) + scoreDislikeEvening(dictionary) + scoreDislikeFriday(dictionary);
+            int sum = 0;
+            if (DislikeMorning)
+                sum += scoreDislikeMorning(dictionary);
+            if (DislikeEvening)
+                sum += scoreDislikeEvening(dictionary);
+            if (DislikeFriday)
+                sum += scoreDislikeFriday(dictionary);
+            if (AvoidGaps)
+                sum += scoreAvoidGaps(dictionary);
+
+            return sum;
 
         }
 
@@ -62,7 +72,7 @@ namespace VTSchedulerEngine
                 foreach (DatetimeEvent ev in pair.Value)
                 {
                     if (ev.Start.Hour < 12)
-                        sum += (12 - ev.Start.Hour + 1) * 60 + 60 - ev.Start.Minute;
+                        sum += (12 - ev.Start.Hour - 1) * 60 + 60 - ev.Start.Minute;
                 }
             }
             return -sum;
@@ -85,7 +95,7 @@ namespace VTSchedulerEngine
         private int scoreDislikeFriday(Dictionary<Datetime.Weekday, List<DatetimeEvent>> schedule)
         {
             if (schedule.ContainsKey(Datetime.Weekday.FRIDAY))
-                return schedule[Datetime.Weekday.FRIDAY].Count * -10;
+                return schedule[Datetime.Weekday.FRIDAY].Count * -120;
             else
                 return 0;
         }

@@ -35,14 +35,20 @@ namespace VTSchedulerEngine
             int i1 = course.IndexOf('-');
 
             string sub = course.Substring(i1 + 1);
-            char[] array = sub.ToCharArray();
-            int i2 = array.Length - 1;
-            for (; i2 > i1; i2--)
+            int result = 0;
+            if (!int.TryParse(sub, out result))
             {
-                if (Char.IsDigit(array[i2]))
-                    break;
+                char[] array = sub.ToCharArray();
+                int i2 = array.Length - 1;
+                for (; i2 > i1; i2--)
+                {
+                    if (Char.IsDigit(array[i2]))
+                        break;
+                }
+                sub = sub.Substring(0, i2 - 1);
+                result = int.Parse(sub);
             }
-            CourseNumber = int.Parse(sub.Substring(0, i2 + 1));
+            CourseNumber = result;
         }
         
         public bool Intersects(Class c)
